@@ -10,17 +10,17 @@ from torch.utils import model_zoo
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # Training settings
-batch_size = 32
-iteration=10000
+batch_size = 16
+iteration=1000
 lr = [0.001, 0.01]
 momentum = 0.9
 no_cuda =False
 seed = 8
-log_interval = 10
+log_interval = 1
 l2_decay = 5e-4
-root_path = "/data/zhuyc/OFFICE31/"
-src_name = "amazon"
-tgt_name = "dslr"
+root_path = "./dataset/Bach_Breakhis/"
+src_name = "Breakhis"
+tgt_name = "Bach"
 
 cuda = not no_cuda and torch.cuda.is_available()
 
@@ -112,7 +112,7 @@ def test(model):
 
 
 if __name__ == '__main__':
-    model = models.DeepCoral(num_classes=31)
+    model = models.DeepCoral(num_classes=2)
     print(model)
     if cuda:
         model.cuda()

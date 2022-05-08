@@ -8,6 +8,9 @@ import os
 from DSAN import DSAN
 import data_loader
 
+# Include tensorboardX
+from tensorboardX import SummaryWriter
+
 
 def load_data(root_path, src, tar, batch_size):
     kwargs = {'num_workers': 1, 'pin_memory': True}
@@ -18,9 +21,7 @@ def load_data(root_path, src, tar, batch_size):
     return loader_src, loader_tar, loader_tar_test
 
 
-def train_epoch(epoch, model, dataloaders, optimizer):
-    
-
+def train_epoch(epoch, model, dataloaders, optimizer, writer):
     model.train()
     source_loader, target_train_loader, _ = dataloaders
     iter_source = iter(source_loader)
@@ -48,8 +49,12 @@ def train_epoch(epoch, model, dataloaders, optimizer):
         if i % args.log_interval == 0:
             print(f'Epoch: [{epoch:2d}], Loss: {loss.item():.4f}, cls_Loss: {loss_cls.item():.4f}, loss_lmmd: {loss_lmmd.item():.4f}')
 
+        writer.add_scalar('train/loss', loss.item(), epoch * num_iter + i)
+        writer.add_scalar('train/loss_cls', loss_cls.item(), epoch * num_iter + i)
+        writer.add_scalar('train/loss_lmmd', loss_lmmd.item(), epoch * num_iter + i)
 
-def test(model, dataloader):
+
+def test(model, dataloader, writer):
     model.eval()
     test_loss = 0
     correct = 0
@@ -65,6 +70,8 @@ def test(model, dataloader):
         test_loss /= len(dataloader)
         print(
             f'Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(dataloader.dataset)} ({100. * correct / len(dataloader.dataset):.2f}%)')
+        writer.add_scalar('test/loss', test_loss, epoch)
+        writer.add_scalar('test/accuracy', 100. * correct / len(dataloader.dataset), epoch)
     return correct
 
 
@@ -87,12 +94,12 @@ def get_args():
     parser.add_argument('--nclass', type=int,
                         help='Number of classes', default=2)
     parser.add_argument('--batch_size', type=np.int32,
-                        help='batch size', default=4)
+                        help='batch size', default=8)
     parser.add_argument('--nepoch', type=int,
                         help='Total epoch num', default=200)
     parser.add_argument('--lr', type=list, help='Learning rate', default=[0.001, 0.01, 0.01])
     parser.add_argument('--early_stop', type=int,
-                        help='Early stoping number', default=30)
+                        help='Early stoping number', default=200)
     parser.add_argument('--seed', type=int,
                         help='Seed', default=2021)
     parser.add_argument('--weight', type=float,
@@ -140,19 +147,26 @@ if __name__ == '__main__':
             {'params': model.cls_fc.parameters(), 'lr': args.lr[1]},
         ], lr=args.lr[0], momentum=args.momentum, weight_decay=args.decay)
 
+
+    # Start the tensoboard
+    writer = SummaryWriter(log_dir=f'./runs/{args.src}-{args.tar}')
+
     for epoch in range(1, args.nepoch + 1):
         stop += 1
         for index, param_group in enumerate(optimizer.param_groups):
             param_group['lr'] = args.lr[index] / math.pow((1 + 10 * (epoch - 1) / args.nepoch), 0.75)
 
-        train_epoch(epoch, model, dataloaders, optimizer)
-        t_correct = test(model, dataloaders[-1])
+        train_epoch(epoch, model, dataloaders, optimizer, writer)
+        t_correct = test(model, dataloaders[-1], writer)
         if t_correct > correct:
             correct = t_correct
             stop = 0
             torch.save(model, 'model.pkl')
         print(
             f'{args.src}-{args.tar}: max correct: {correct} max accuracy: {100. * correct / len(dataloaders[-1].dataset):.2f}%\n')
+
+        writer.add_scalar('accuracy', 100. * correct / len(dataloaders[-1].dataset), epoch)
+        
 
         if stop >= args.early_stop:
             print(

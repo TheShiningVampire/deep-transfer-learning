@@ -4,3 +4,8 @@
 *.jpg
 *.pyc
 *.pkl
+UDA/pytorch1.0/DSAN/dataset/Bach_Breakhis_pretrain.zip
+*.h5
+*.pth
+UDA/pytorch1.0/DSAN/runs
+*.zip
