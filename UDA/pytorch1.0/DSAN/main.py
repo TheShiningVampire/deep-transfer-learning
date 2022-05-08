@@ -86,15 +86,21 @@ def get_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--root_path', type=str, help='Root path for dataset',
-                        default='./dataset/Bach_Breakhis')
+                        default='/data/zhuyc/OFFICE31/')
     parser.add_argument('--src', type=str,
-                        help='Source domain', default='Breakhis')
+                        help='Source domain', default='amazon')
     parser.add_argument('--tar', type=str,
-                        help='Target domain', default='Bach')
+                        help='Target domain', default='webcam')
     parser.add_argument('--nclass', type=int,
+<<<<<<< HEAD
                         help='Number of classes', default=2)
     parser.add_argument('--batch_size', type=np.int32,
                         help='batch size', default=8)
+=======
+                        help='Number of classes', default=31)
+    parser.add_argument('--batch_size', type=float,
+                        help='batch size', default=32)
+>>>>>>> parent of 23b492b (update 2 files and create 24 files)
     parser.add_argument('--nepoch', type=int,
                         help='Total epoch num', default=200)
     parser.add_argument('--lr', type=list, help='Learning rate', default=[0.001, 0.01, 0.01])

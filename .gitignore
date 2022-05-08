@@ -1,4 +1,5 @@
 ./UDA/pytorch1.0/DSAN/dataset
+<<<<<<< HEAD
 *.tif
 *.png
 *.jpg
@@ -9,3 +10,5 @@ UDA/pytorch1.0/DSAN/dataset/Bach_Breakhis_pretrain.zip
 *.pth
 UDA/pytorch1.0/DSAN/runs
 *.zip
+=======
+>>>>>>> parent of 23b492b (update 2 files and create 24 files)
